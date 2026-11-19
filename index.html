@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f3a5f">
+<title>Stock</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{--bg:#f3f4f6;--card:#fff;--ink:#111827;--mute:#6b7280;--line:#e5e7eb;--pri:#1f3a5f;--in:#15803d;--out:#b91c1c;--inv:#b45309;--r:12px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--pri);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
+header h1{font-size:18px;margin:0;flex:1}
+header .st{font-size:12px;opacity:.85;text-align:right}
+main{padding:12px 12px 96px;max-width:640px;margin:0 auto}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:5;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;padding:10px 2px 12px;font-size:12px;color:var(--mute)}
+nav button b{display:block;font-size:20px;line-height:1.1}
+nav button.on{color:var(--pri);font-weight:600}
+.card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+h2{font-size:17px;margin:0 0 10px}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+input,select,textarea{width:100%;font:inherit;padding:11px 12px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
+input:focus,select:focus{outline:2px solid #93c5fd;border-color:#60a5fa}
+.btn{display:block;width:100%;border:0;border-radius:10px;padding:14px;font:600 16px system-ui,sans-serif;background:var(--pri);color:#fff;margin-top:10px}
+.btn.sec{background:#e5e7eb;color:var(--ink)}
+.btn.in{background:var(--in)}.btn.out{background:var(--out)}.btn.inv{background:var(--inv)}
+.btn:disabled{opacity:.5}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.hide{display:none!important}
+.mute{color:var(--mute);font-size:13px}
+.video{position:relative;background:#000;border-radius:var(--r);overflow:hidden;aspect-ratio:4/3}
+.video video{width:100%;height:100%;object-fit:cover;display:block}
+.video .aim{position:absolute;inset:18% 22%;border:3px solid rgba(255,255,255,.85);border-radius:14px;box-shadow:0 0 0 999px rgba(0,0,0,.25)}
+.video .tools{position:absolute;right:8px;top:8px;display:flex;gap:6px}
+.video .tools button{border:0;border-radius:8px;padding:8px 10px;background:rgba(0,0,0,.55);color:#fff;font-size:14px}
+.prod .ref{font:700 22px system-ui,sans-serif}
+.prod .des{margin:2px 0 10px}
+.kv{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.kv div{background:var(--bg);border-radius:10px;padding:8px;text-align:center}
+.kv small{display:block;color:var(--mute);font-size:12px}
+.kv span{font:700 18px system-ui,sans-serif}
+.tabs{display:flex;gap:6px;margin:12px 0 4px}
+.tabs button{flex:1;border:2px solid var(--line);background:#fff;border-radius:10px;padding:10px 4px;font:600 15px system-ui,sans-serif;color:var(--mute)}
+.tabs button.on[data-m=in]{border-color:var(--in);color:var(--in);background:#f0fdf4}
+.tabs button.on[data-m=out]{border-color:var(--out);color:var(--out);background:#fef2f2}
+.tabs button.on[data-m=inv]{border-color:var(--inv);color:var(--inv);background:#fffbeb}
+.qty{display:flex;gap:8px;align-items:stretch}
+.qty button{width:64px;border:0;border-radius:10px;background:#e5e7eb;font:700 26px system-ui,sans-serif}
+.qty input{text-align:center;font:700 26px system-ui,sans-serif}
+.preview{margin-top:8px;font-size:14px;text-align:center}
+.list .it{display:flex;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line)}
+.list .it:last-child{border-bottom:0}
+.list .it .t{flex:1;min-width:0}
+.list .it .t b{display:block}
+.list .it .t span{display:block;color:var(--mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list .it input[type=checkbox]{width:22px;height:22px;flex:none}
+.list .it input.cp{width:56px;flex:none;padding:6px;text-align:center}
+.tag{font-size:12px;border-radius:6px;padding:2px 6px;background:var(--bg);white-space:nowrap}
+.tag.in{background:#dcfce7;color:var(--in)}.tag.out{background:#fee2e2;color:var(--out)}.tag.inv{background:#fef3c7;color:var(--inv)}
+#toast{position:fixed;left:12px;right:12px;bottom:84px;z-index:20;padding:14px 16px;border-radius:12px;color:#fff;font-weight:600;background:#111827;box-shadow:0 6px 20px rgba(0,0,0,.25);transition:opacity .2s;max-width:616px;margin:0 auto}
+#toast.ok{background:var(--in)}#toast.err{background:var(--out)}#toast.warn{background:var(--inv)}
+.busy{position:fixed;inset:0;background:rgba(255,255,255,.55);z-index:30;display:flex;align-items:center;justify-content:center;font-weight:600}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all;background:var(--bg);padding:6px 8px;border-radius:8px}
+.users{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 4px}
+.users button{border:2px solid var(--line);background:#fff;border-radius:12px;padding:16px 8px;font:600 16px system-ui,sans-serif;color:var(--ink);word-break:break-word}
+.users button:active{border-color:var(--pri);background:#eff6ff}
+.users .ini{display:block;width:44px;height:44px;line-height:44px;border-radius:50%;background:var(--pri);color:#fff;margin:0 auto 6px;font-size:17px}
+header .st{cursor:pointer}
+.counter{font:700 40px system-ui,sans-serif;text-align:center;margin:8px 0}
+#print{display:none}
+@media print{
+  @page{size:A4;margin:0}
+  body{background:#fff}
+  body>*:not(#print){display:none!important}
+  #print{display:block}
+  .sheet{width:210mm;height:297mm;position:relative;overflow:hidden;page-break-after:always;break-after:page}
+  .sheet:last-child{page-break-after:auto;break-after:auto}
+}
+.lab{position:absolute;display:flex;align-items:center;gap:2mm;padding:2mm;overflow:hidden;font-family:Arial,sans-serif;color:#000}
+.lab svg{flex:none;height:100%;width:auto}
+.lab .lt{min-width:0;flex:1}
+.lab .lr{font-weight:700;font-size:11pt;word-break:break-all;line-height:1.1}
+.lab .ld{font-size:7.5pt;line-height:1.15;max-height:3.5em;overflow:hidden;margin-top:1mm}
+.lab .le{font-size:9pt;font-weight:700;margin-top:1mm}
+.lab.outline{outline:.2mm dashed #bbb;outline-offset:-.1mm}
+</style>
+</head>
+<body>
+<header><h1 id="title">Stock</h1><div class="st" id="hdrst"></div></header>
+<main>
+
+<!-- CONNEXION -->
+<section id="v-login" class="hide">
+  <div class="card">
+    <h2>Connexion</h2>
+    <p class="mute">Connectez-vous avec votre compte Microsoft 365 pour accéder au fichier de stock sur OneDrive.</p>
+    <button class="btn" id="bLogin">Se connecter avec Microsoft</button>
+    <p class="mute" id="loginMsg"></p>
+  </div>
+</section>
+
+<!-- ACCUEIL -->
+<section id="v-home" class="hide">
+  <div class="card">
+    <h2 style="font-size:20px">Qui utilise l'application ?</h2>
+    <p class="mute">Chaque entrée, sortie et inventaire sera enregistré à ce nom.</p>
+    <div id="hUsers" class="users"></div>
+    <button class="btn sec" id="bUAdd">+ Créer un utilisateur</button>
+    <div id="hNew" class="hide">
+      <label for="hName">Nom de l'utilisateur</label>
+      <input id="hName" autocomplete="off" autocapitalize="words" placeholder="Prénom Nom">
+      <div class="row"><button class="btn sec" id="bUNo">Annuler</button><button class="btn" id="bUOk">Créer et continuer</button></div>
+    </div>
+    <p class="mute" id="hMsg"></p>
+  </div>
+</section>
+
+<!-- SCAN -->
+<section id="v-scan" class="hide">
+  <div class="card">
+    <div class="video" id="vidBox"><video id="vid" playsinline muted></video><div class="aim"></div>
+      <div class="tools"><button id="bTorch" class="hide">Lampe</button></div></div>
+    <p class="mute" id="scanMsg">Visez le QR code de la pièce.</p>
+    <div class="row"><button class="btn" id="bCam">Démarrer la caméra</button></div>
+  </div>
+  <div class="card">
+    <label for="manCode">Ou saisir / scanner un code (douchette)</label>
+    <div class="row"><input id="manCode" autocomplete="off" autocapitalize="off" placeholder="Code ou référence"><button class="btn" style="flex:0 0 90px;margin:0" id="bMan">OK</button></div>
+  </div>
+</section>
+
+<!-- FICHE PRODUIT -->
+<section id="v-prod" class="hide">
+  <div class="card prod">
+    <div class="ref" id="pRef"></div>
+    <div class="des" id="pDes"></div>
+    <div class="kv">
+      <div><small>Stock</small><span id="pQte"></span></div>
+      <div><small>Emplacement</small><span id="pEmp"></span></div>
+      <div><small>Prix d'achat</small><span id="pPrix"></span></div>
+    </div>
+    <p class="mute" id="pCode"></p>
+    <div class="tabs" id="modeTabs">
+      <button data-m="in">Entrée</button><button data-m="out">Sortie</button><button data-m="inv">Inventaire</button>
+    </div>
+    <label id="qLbl" for="qIn">Quantité</label>
+    <div class="qty"><button id="qMinus">−</button><input id="qIn" type="number" inputmode="numeric" min="0" step="1"><button id="qPlus">+</button></div>
+    <div class="preview" id="qPrev"></div>
+    <button class="btn" id="bValid">Valider</button>
+    <div class="row">
+      <button class="btn sec" id="bMulti">Enregistrer des codes pièces</button>
+      <button class="btn sec" id="bEdit">Modifier</button>
+    </div>
+    <button class="btn sec" id="bBack">Retour au scan</button>
+  </div>
+</section>
+
+<!-- CODE INCONNU -->
+<section id="v-unk" class="hide">
+  <div class="card">
+    <h2>Code inconnu</h2>
+    <div class="code" id="uCode"></div>
+    <p class="mute">Ce code pièce n'est relié à aucune référence. Choisissez la référence de cette pièce : le code sera mémorisé.</p>
+    <p class="hide" id="uSame" style="background:#fffbeb;border-left:4px solid var(--inv);padding:8px 10px;border-radius:8px;font-size:14px"></p>
+    <input id="uSearch" placeholder="Rechercher référence ou désignation" autocomplete="off">
+    <div class="list" id="uList"></div>
+    <button class="btn sec" id="bUNew">Créer une nouvelle référence</button>
+    <button class="btn sec" id="bUCancel">Annuler</button>
+  </div>
+</section>
+
+<!-- RECHERCHE -->
+<section id="v-search" class="hide">
+  <div class="card">
+    <h2>Rechercher une référence</h2>
+    <input id="sSearch" placeholder="Référence, désignation ou emplacement" autocomplete="off">
+    <div class="list" id="sList"></div>
+    <button class="btn sec" id="bSNew">Créer une nouvelle référence</button>
+  </div>
+</section>
+
+<!-- FORMULAIRE REFERENCE -->
+<section id="v-form" class="hide">
+  <div class="card">
+    <h2 id="fTitle">Nouvelle référence</h2>
+    <label for="fRef">Référence magasin</label><input id="fRef" autocomplete="off" autocapitalize="characters">
+    <label for="fDes">Désignation</label><input id="fDes" autocomplete="off">
+    <label for="fPrix">Prix d'achat (€)</label><input id="fPrix" inputmode="decimal" autocomplete="off">
+    <label>Emplacement (rangée - étagère - niveau)</label>
+    <div class="row"><select id="fR"></select><select id="fE"></select><select id="fN"></select></div>
+    <div id="fQBox"><label for="fQte">Quantité initiale</label><input id="fQte" type="number" inputmode="numeric" min="0" step="1" value="0"></div>
+    <p class="mute" id="fCodeMsg"></p>
+    <button class="btn" id="bFSave">Enregistrer</button>
+    <button class="btn sec" id="bFCancel">Annuler</button>
+  </div>
+</section>
+
+<!-- ASSOCIATION MULTIPLE -->
+<section id="v-multi" class="hide">
+  <div class="card">
+    <h2>Codes pièces pour <span id="mRef"></span></h2>
+    <div class="video"><video id="vid2" playsinline muted></video><div class="aim"></div></div>
+    <div class="counter" id="mCount">0</div>
+    <p class="mute" style="text-align:center">nouveaux codes enregistrés</p>
+    <p class="mute" id="mMsg"></p>
+    <div class="row"><input id="mMan" placeholder="Saisie / douchette" autocomplete="off"><button class="btn" style="flex:0 0 90px;margin:0" id="bMMan">OK</button></div>
+    <button class="btn in" id="bMEntry">Terminer et faire l'entrée</button>
+    <button class="btn sec" id="bMEnd">Terminer sans entrée</button>
+  </div>
+</section>
+
+<!-- ETIQUETTES -->
+<section id="v-lab" class="hide">
+  <div class="card">
+    <h2>Étiquettes QR (planche A4)</h2>
+    <p class="mute">Le QR imprimé contient <span class="code">STOCKREF:</span> suivi de la référence. L'application le distingue ainsi des codes pièces fournisseur et le reconnaît sans association.</p>
+    <input id="lSearch" placeholder="Filtrer" autocomplete="off">
+    <label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="lNoCode" style="width:20px;height:20px" checked> Seulement les références sans code pièce associé</label>
+    <div class="row" style="margin-top:6px"><button class="btn sec" id="lAll" style="margin:0">Tout cocher</button><button class="btn sec" id="lNone" style="margin:0">Tout décocher</button></div>
+    <div class="list" id="lList" style="max-height:45vh;overflow:auto;margin-top:6px"></div>
+  </div>
+  <div class="card">
+    <h2>Format de planche</h2>
+    <div class="row"><div><label>Colonnes</label><input id="lc" type="number" min="1"></div><div><label>Lignes</label><input id="lr" type="number" min="1"></div></div>
+    <div class="row"><div><label>Largeur étiq. (mm)</label><input id="lw" type="number" step="0.1"></div><div><label>Hauteur étiq. (mm)</label><input id="lh" type="number" step="0.1"></div></div>
+    <div class="row"><div><label>Marge haut (mm)</label><input id="lmt" type="number" step="0.1"></div><div><label>Marge gauche (mm)</label><input id="lml" type="number" step="0.1"></div></div>
+    <div class="row"><div><label>Écart horiz. (mm)</label><input id="lgx" type="number" step="0.1"></div><div><label>Écart vert. (mm)</label><input id="lgy" type="number" step="0.1"></div></div>
+    <label>Commencer à l'étiquette n° (planche entamée)</label><input id="lstart" type="number" min="1" value="1">
+    <label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="lOutline" style="width:20px;height:20px"> Imprimer le contour (test d'alignement sur papier blanc)</label>
+    <p class="mute" id="lSum"></p>
+    <button class="btn" id="bPrint">Imprimer / enregistrer en PDF</button>
+  </div>
+</section>
+
+<!-- HISTORIQUE -->
+<section id="v-hist" class="hide">
+  <div class="card">
+    <h2>50 derniers mouvements</h2>
+    <div class="list" id="hList"></div>
+    <button class="btn sec" id="bHRefresh">Actualiser</button>
+  </div>
+</section>
+
+<!-- REGLAGES -->
+<section id="v-set" class="hide">
+  <div class="card">
+    <h2>Connexion Microsoft</h2>
+    <label for="cTenant">ID de l'annuaire (tenant)</label><input id="cTenant" autocomplete="off">
+    <label for="cClient">ID de l'application (client)</label><input id="cClient" autocomplete="off">
+    <label for="cPath">Chemin du fichier dans votre OneDrive</label><input id="cPath" autocomplete="off" placeholder="/Stock/Stock.xlsx">
+    <label for="cBase">Avancé : chemin Graph de l'élément (laisser vide)</label><input id="cBase" autocomplete="off" placeholder="/drives/{drive-id}/items/{item-id}">
+    <p class="mute">Redirection à déclarer dans Azure : <span class="code" id="cRedir"></span></p>
+    <button class="btn" id="bCSave">Enregistrer et tester</button>
+    <p class="mute" id="cMsg"></p>
+  </div>
+  <div class="card">
+    <h2>Utilisation</h2>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="cAuto" style="width:20px;height:20px"> Relancer la caméra après chaque validation</label>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="cSound" style="width:20px;height:20px"> Bip et vibration</label>
+    <label for="cIdle">Retour à l'accueil (choix de l'utilisateur) après inactivité, en minutes (0 = jamais)</label><input id="cIdle" type="number" min="0" step="1" inputmode="numeric">
+    <button class="btn sec" id="bChUser">Changer d'utilisateur</button>
+    <p class="mute" id="cUser"></p>
+    <p class="mute" id="cPend"></p>
+    <button class="btn sec" id="bReload">Recharger les données</button>
+    <button class="btn sec" id="bLogout">Se déconnecter</button>
+  </div>
+</section>
+</main>
+
+<nav id="nav" class="hide">
+  <button data-v="scan" class="on"><b>⌖</b>Scanner</button>
+  <button data-v="search"><b>⌕</b>Chercher</button>
+  <button data-v="lab"><b>▦</b>Étiquettes</button>
+  <button data-v="hist"><b>☰</b>Historique</button>
+  <button data-v="set"><b>⚙</b>Réglages</button>
+</nav>
+<div id="toast" class="hide"></div>
+<div id="busy" class="busy hide">Connexion à OneDrive…</div>
+<div id="print"></div>
+
+<script>
+// Encodeur QR minimal : mode octet (UTF-8), correction M, versions 1 a 10 (jusqu'a 213 octets).
+// D'apres l'algorithme de reference de Project Nayuki (MIT).
+const QR = (() => {
+  const ECC_M = [-1, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26];
+  const BLK_M = [-1, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5];
+  const rawModules = v => {
+    let r = (16 * v + 128) * v + 64;
+    if (v >= 2) { const n = Math.floor(v / 7) + 2; r -= (25 * n - 10) * n - 55; if (v >= 7) r -= 36; }
+    return r;
+  };
+  const dataCodewords = v => Math.floor(rawModules(v) / 8) - ECC_M[v] * BLK_M[v];
+  const gmul = (x, y) => { let z = 0; for (let i = 7; i >= 0; i--) { z = (z << 1) ^ ((z >>> 7) * 0x11d); z ^= ((y >>> i) & 1) * x; } return z & 0xff; };
+  const rsDivisor = d => { const r = new Array(d).fill(0); r[d - 1] = 1; let root = 1;
+    for (let i = 0; i < d; i++) { for (let j = 0; j < d; j++) { r[j] = gmul(r[j], root); if (j + 1 < d) r[j] ^= r[j + 1]; } root = gmul(root, 2); } return r; };
+  const rsRemainder = (data, div) => { const r = div.map(() => 0);
+    for (const b of data) { const f = b ^ r.shift(); r.push(0); div.forEach((c, i) => r[i] ^= gmul(c, f)); } return r; };
+  const bit = (x, i) => ((x >>> i) & 1) !== 0;
+
+  function encode(text) {
+    const bytes = Array.from(new TextEncoder().encode(String(text)));
+    let ver = 0;
+    for (let v = 1; v <= 10; v++) { const ccBits = v <= 9 ? 8 : 16; if (4 + ccBits + bytes.length * 8 <= dataCodewords(v) * 8) { ver = v; break; } }
+    if (!ver) throw new Error('Texte trop long pour un QR code (max ~200 caracteres)');
+    const cap = dataCodewords(ver) * 8, bb = [];
+    const put = (val, len) => { for (let i = len - 1; i >= 0; i--) bb.push((val >>> i) & 1); };
+    put(4, 4); put(bytes.length, ver <= 9 ? 8 : 16); bytes.forEach(b => put(b, 8));
+    put(0, Math.min(4, cap - bb.length)); put(0, (8 - bb.length % 8) % 8);
+    for (let p = 0xec; bb.length < cap; p ^= 0xec ^ 0x11) put(p, 8);
+    const data = []; for (let i = 0; i < bb.length; i += 8) { let b = 0; for (let j = 0; j < 8; j++) b = (b << 1) | bb[i + j]; data.push(b); }
+
+    // Blocs + ECC + entrelacement
+    const nb = BLK_M[ver], eccLen = ECC_M[ver], raw = Math.floor(rawModules(ver) / 8);
+    const nShort = nb - raw % nb, shortLen = Math.floor(raw / nb), div = rsDivisor(eccLen), blocks = [];
+    for (let i = 0, k = 0; i < nb; i++) {
+      const dat = data.slice(k, k + shortLen - eccLen + (i < nShort ? 0 : 1)); k += dat.length;
+      const ecc = rsRemainder(dat, div); if (i < nShort) dat.push(0); blocks.push(dat.concat(ecc));
+    }
+    const cw = [];
+    for (let i = 0; i < blocks[0].length; i++) blocks.forEach((b, j) => { if (i !== shortLen - eccLen || j >= nShort) cw.push(b[i]); });
+
+    const size = ver * 4 + 17;
+    const mod = Array.from({ length: size }, () => new Array(size).fill(false));
+    const fn = Array.from({ length: size }, () => new Array(size).fill(false));
+    const setF = (x, y, d) => { mod[y][x] = d; fn[y][x] = true; };
+    for (let i = 0; i < size; i++) { setF(6, i, i % 2 === 0); setF(i, 6, i % 2 === 0); }
+    const finder = (x, y) => { for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) {
+      const d = Math.max(Math.abs(dx), Math.abs(dy)), xx = x + dx, yy = y + dy;
+      if (xx >= 0 && xx < size && yy >= 0 && yy < size) setF(xx, yy, d !== 2 && d !== 4); } };
+    finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+    if (ver > 1) {
+      const n = Math.floor(ver / 7) + 2, step = Math.ceil((ver * 4 + 4) / (n * 2 - 2)) * 2, pos = [6];
+      for (let p = size - 7; pos.length < n; p -= step) pos.splice(1, 0, p);
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+        if ((i === 0 && j === 0) || (i === 0 && j === n - 1) || (i === n - 1 && j === 0)) continue;
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) setF(pos[i] + dx, pos[j] + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+      }
+    }
+    const drawFormat = mask => {
+      const d = (0 << 3) | mask; let r = d; for (let i = 0; i < 10; i++) r = (r << 1) ^ ((r >>> 9) * 0x537);
+      const b = ((d << 10) | r) ^ 0x5412;
+      for (let i = 0; i <= 5; i++) setF(8, i, bit(b, i));
+      setF(8, 7, bit(b, 6)); setF(8, 8, bit(b, 7)); setF(7, 8, bit(b, 8));
+      for (let i = 9; i < 15; i++) setF(14 - i, 8, bit(b, i));
+      for (let i = 0; i < 8; i++) setF(size - 1 - i, 8, bit(b, i));
+      for (let i = 8; i < 15; i++) setF(8, size - 15 + i, bit(b, i));
+      setF(8, size - 8, true);
+    };
+    drawFormat(0);
+    if (ver >= 7) { let r = ver; for (let i = 0; i < 12; i++) r = (r << 1) ^ ((r >>> 11) * 0x1f25);
+      const b = (ver << 12) | r; for (let i = 0; i < 18; i++) { const a = size - 11 + i % 3, c = Math.floor(i / 3); setF(a, c, bit(b, i)); setF(c, a, bit(b, i)); } }
+    for (let right = size - 1, i = 0; right >= 1; right -= 2) {
+      if (right === 6) right = 5;
+      for (let v = 0; v < size; v++) for (let j = 0; j < 2; j++) {
+        const x = right - j, up = ((right + 1) & 2) === 0, y = up ? size - 1 - v : v;
+        if (!fn[y][x] && i < cw.length * 8) { mod[y][x] = bit(cw[i >>> 3], 7 - (i & 7)); i++; }
+      }
+    }
+    const maskF = [(x, y) => (x + y) % 2 === 0, (x, y) => y % 2 === 0, x => x % 3 === 0, (x, y) => (x + y) % 3 === 0,
+      (x, y) => (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0, (x, y) => x * y % 2 + x * y % 3 === 0,
+      (x, y) => (x * y % 2 + x * y % 3) % 2 === 0, (x, y) => ((x + y) % 2 + x * y % 3) % 2 === 0];
+    const applyMask = m => { for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (!fn[y][x] && maskF[m](x, y)) mod[y][x] = !mod[y][x]; };
+    const penalty = () => { // regles 1, 2 et 4 (la regle 3 est omise : le choix du masque reste valide)
+      let p = 0, dark = 0;
+      for (let a = 0; a < 2; a++) for (let i = 0; i < size; i++) { let run = 1;
+        for (let j = 1; j < size; j++) { const c = a ? mod[j][i] : mod[i][j], pr = a ? mod[j - 1][i] : mod[i][j - 1];
+          if (c === pr) { run++; if (run === 5) p += 3; else if (run > 5) p++; } else run = 1; } }
+      for (let y = 0; y < size - 1; y++) for (let x = 0; x < size - 1; x++) { const c = mod[y][x]; if (c === mod[y][x + 1] && c === mod[y + 1][x] && c === mod[y + 1][x + 1]) p += 3; }
+      mod.forEach(r => r.forEach(c => { if (c) dark++; }));
+      return p + (Math.ceil(Math.abs(dark * 20 - size * size * 10) / (size * size)) - 1) * 10;
+    };
+    let best = 0, bestP = Infinity;
+    for (let m = 0; m < 8; m++) { applyMask(m); drawFormat(m); const p = penalty(); if (p < bestP) { bestP = p; best = m; } applyMask(m); }
+    applyMask(best); drawFormat(best);
+    return mod;
+  }
+
+  function svg(text, border = 2) {
+    const m = encode(text), n = m.length + border * 2; let d = '';
+    m.forEach((row, y) => row.forEach((c, x) => { if (c) d += `M${x + border},${y + border}h1v1h-1z`; }));
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+  }
+  return { encode, svg };
+})();
+
+
+</script>
+<script>
+'use strict';
+/* ==== CONFIGURATION PAR DEFAUT (modifiable dans Reglages) ==== */
+const DEFAULTS = {
+  tenantId: '',            // ID de l'annuaire (Azure > Inscriptions d'applications > Vue d'ensemble)
+  clientId: '',            // ID d'application (client)
+  filePath: '/Stock/Stock.xlsx',
+  graphBase: '',
+  autoCam: true, sound: true, idleMin: 15,
+  label: { c: 3, r: 8, w: 70, h: 37, mt: 0.5, ml: 0, gx: 0, gy: 0 }
+};
+// Prefixe des QR imprimes par l'application : distingue une etiquette magasin d'un code piece.
+const LABEL_PREFIX = 'STOCKREF:';
+const isLabel = c => String(c || '').toUpperCase().startsWith(LABEL_PREFIX);
+const T_STOCK = 'tblStock', T_CODES = 'tblCodes', T_MOV = 'tblMouvements', T_USERS = 'tblUtilisateurs';
+const SCOPES = 'openid profile offline_access https://graph.microsoft.com/Files.ReadWrite https://graph.microsoft.com/User.Read';
+
+/* ==== utilitaires ==== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const MEM = {};
+const store = { // localStorage, avec repli en memoire si indisponible
+  get(k, d) { let v; try { v = localStorage.getItem('stk_' + k); } catch { v = MEM[k]; } if (v == null) v = MEM[k]; try { return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { const s = JSON.stringify(v); MEM[k] = s; try { localStorage.setItem('stk_' + k, s); } catch {} },
+  del(k) { delete MEM[k]; try { localStorage.removeItem('stk_' + k); } catch {} }
+};
+const cfg = Object.assign({}, DEFAULTS, store.get('cfg', {}));
+cfg.label = Object.assign({}, DEFAULTS.label, cfg.label || {});
+const saveCfg = () => store.set('cfg', cfg);
+if (window.STOCK_PRESET) { Object.assign(cfg, window.STOCK_PRESET.cfg || {}); if (window.STOCK_PRESET.tok) store.set('tok', window.STOCK_PRESET.tok); } // simulation / pre-configuration
+const pad2 = n => String(n).padStart(2, '0');
+const nowStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; };
+const toNum = v => { if (typeof v === 'number') return v; const n = parseFloat(String(v ?? '').replace(/\s/g, '').replace(',', '.')); return isNaN(n) ? 0 : n; };
+const fmtPrix = v => (v === '' || v == null) ? '—' : toNum(v).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+const fmtDate = v => { // nombre de serie Excel ou texte
+  if (typeof v === 'number') { const d = new Date(Math.round((v - 25569) * 86400000)); return d.toISOString().slice(0, 16).replace('T', ' ').replace(/(\d+)-(\d+)-(\d+)/, '$3/$2/$1'); }
+  return String(v ?? '');
+};
+const EMP_RE = /^(0[1-9]|1[0-9]|20)-(0[1-9]|1[0-9]|20)-[A-O]$/;
+const normEmp = s => { // accepte 5-12-c, 05 12 C, 0512C...
+  const m = String(s ?? '').trim().toUpperCase().match(/^(\d{1,2})[\s\-./]*(\d{1,2})[\s\-./]*([A-Z])$/);
+  if (!m) return null; const e = `${pad2(+m[1])}-${pad2(+m[2])}-${m[3]}`; return EMP_RE.test(e) ? e : null;
+};
+
+let toastT;
+function toast(msg, kind = '') { const t = $('toast'); t.textContent = msg; t.className = kind; clearTimeout(toastT); toastT = setTimeout(() => t.className = 'hide', kind === 'err' ? 6000 : 2600); }
+let busyN = 0;
+const busy = on => { busyN += on ? 1 : -1; $('busy').classList.toggle('hide', busyN <= 0); };
+let actx;
+function beep(ok = true) {
+  if (!cfg.sound) return;
+  try { navigator.vibrate && navigator.vibrate(ok ? 60 : [80, 60, 80]);
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain(); o.frequency.value = ok ? 1400 : 300; g.gain.value = .08;
+    o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (ok ? .09 : .3)); } catch {}
+}
+
+/* ==== Authentification OAuth 2.0 (code + PKCE), sans bibliotheque ==== */
+const Auth = {
+  redirect: location.origin + location.pathname,
+  authority() { return `https://login.microsoftonline.com/${encodeURIComponent(cfg.tenantId || 'organizations')}/oauth2/v2.0`; },
+  b64url(buf) { return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); },
+  rand(n = 32) { const a = new Uint8Array(n); crypto.getRandomValues(a); return this.b64url(a); },
+  async login() {
+    if (!cfg.clientId) { show('set'); toast("Renseignez d'abord l'ID d'application dans Réglages", 'warn'); return; }
+    const verifier = this.rand(48), state = this.rand(16);
+    const challenge = this.b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+    store.set('pkce', { verifier, state });
+    const p = new URLSearchParams({ client_id: cfg.clientId, response_type: 'code', redirect_uri: this.redirect, scope: SCOPES,
+      response_mode: 'query', state, code_challenge: challenge, code_challenge_method: 'S256' });
+    location.assign(`${this.authority()}/authorize?${p}`);
+  },
+  async tokenReq(params) {
+    const r = await fetch(`${this.authority()}/token`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(Object.assign({ client_id: cfg.clientId, scope: SCOPES }, params)) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error_description || j.error || ('HTTP ' + r.status));
+    const tok = { at: j.access_token, rt: j.refresh_token || (store.get('tok', {}).rt), exp: Date.now() + (j.expires_in || 3600) * 1000 };
+    if (j.id_token) try { const p = JSON.parse(decodeURIComponent(escape(atob(j.id_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))))); tok.user = p.name || p.preferred_username; } catch {}
+    if (!tok.user) tok.user = store.get('tok', {}).user;
+    store.set('tok', tok); return tok;
+  },
+  async handleRedirect() {
+    const q = new URLSearchParams(location.search);
+    if (!q.has('code') && !q.has('error')) return;
+    history.replaceState(null, '', this.redirect);
+    if (q.has('error')) throw new Error(q.get('error_description') || q.get('error'));
+    const pk = store.get('pkce'); store.del('pkce');
+    if (!pk || pk.state !== q.get('state')) throw new Error('Réponse de connexion invalide (state). Réessayez.');
+    await this.tokenReq({ grant_type: 'authorization_code', code: q.get('code'), redirect_uri: this.redirect, code_verifier: pk.verifier });
+  },
+  async token(force = false) {
+    const t = store.get('tok');
+    if (!t) throw new AuthNeeded();
+    if (!force && t.at && t.exp - 120000 > Date.now()) return t.at;
+    if (!t.rt) throw new AuthNeeded();
+    if (!this._ref) this._ref = this.tokenReq({ grant_type: 'refresh_token', refresh_token: t.rt, redirect_uri: this.redirect })
+      .then(x => x.at, e => { store.del('tok'); throw new AuthNeeded(e.message); }).finally(() => { this._ref = null; });
+    return this._ref;
+  },
+  user() { return (store.get('tok', {}) || {}).user || ''; },
+  logout() { store.del('tok'); location.assign(`${this.authority()}/logout?post_logout_redirect_uri=${encodeURIComponent(this.redirect)}`); }
+};
+class AuthNeeded extends Error { constructor(m) { super(m || 'Connexion requise'); this.auth = true; } }
+
+/* ==== Microsoft Graph : classeur Excel ==== */
+const G = {
+  base() {
+    const b = (cfg.graphBase || '').trim();
+    if (b) return 'https://graph.microsoft.com/v1.0' + (b.startsWith('/') ? b : '/' + b) + '/workbook';
+    const p = '/' + String(cfg.filePath || '').trim().replace(/^\/+/, '');
+    return `https://graph.microsoft.com/v1.0/me/drive/root:${p.split('/').map(encodeURIComponent).join('/')}:/workbook`;
+  },
+  async req(path, opt = {}, tries = 0) {
+    const at = await Auth.token(tries > 0 && opt._401);
+    const r = await fetch(this.base() + path, { method: opt.method || 'GET',
+      headers: Object.assign({ Authorization: 'Bearer ' + at }, opt.body ? { 'Content-Type': 'application/json' } : {}),
+      body: opt.body ? JSON.stringify(opt.body) : undefined });
+    if (r.status === 401 && tries < 1) return this.req(path, Object.assign({}, opt, { _401: true }), tries + 1);
+    if ([429, 502, 503, 504].includes(r.status) && tries < 4) {
+      const wait = (parseInt(r.headers.get('Retry-After')) || (2 ** tries)) * 1000;
+      await new Promise(res => setTimeout(res, Math.min(wait, 15000))); return this.req(path, opt, tries + 1);
+    }
+    const txt = await r.text(); let j = {}; try { j = txt ? JSON.parse(txt) : {}; } catch {}
+    if (!r.ok) {
+      let m = (j.error && j.error.message) || ('HTTP ' + r.status);
+      if (r.status === 404) m = 'Fichier ou tableau introuvable (' + m + '). Vérifiez le chemin du fichier et les noms tblStock / tblCodes / tblMouvements.';
+      if (r.status === 423 || /lock/i.test(m)) m = 'Le fichier est verrouillé (ouvert en modification ailleurs ?). ' + m;
+      throw new Error(m);
+    }
+    return j;
+  },
+  tableValues(t) { return this.req(`/tables/${t}/range?$select=values,address`); },
+  rowGet(t, i) { return this.req(`/tables/${t}/rows/itemAt(index=${i})`); },
+  rowPatch(t, i, values) { return this.req(`/tables/${t}/rows/itemAt(index=${i})`, { method: 'PATCH', body: { values: [values] } }); },
+  rowsAdd(t, rows) { return this.req(`/tables/${t}/rows/add`, { method: 'POST', body: { index: null, values: rows } }); }
+};
+
+/* ==== Donnees en memoire ==== */
+const D = { stock: null, codes: new Map(), codesByRef: new Map(), movHeaders: null, codeHeaders: null, loaded: false };
+const COLS = { ref: 'reference', des: 'designation', qte: 'quantite', prix: 'prixdachat', emp: 'emplacement' };
+
+function parseStock(j) {
+  const v = j.values || [], h = (v[0] || []).map(norm), col = {};
+  for (const k in COLS) col[k] = h.indexOf(COLS[k]);
+  if (col.ref < 0 || col.qte < 0) throw new Error('Colonnes « Référence » et « Quantité » introuvables dans tblStock.');
+  const rows = [];
+  for (let i = 1; i < v.length; i++) rows.push({ index: i - 1, values: v[i] });
+  return { headers: v[0], col, width: h.length, rows };
+}
+function itemOf(r) {
+  const c = D.stock.col, v = r.values, g = k => c[k] >= 0 ? v[c[k]] : '';
+  return { index: r.index, values: v, ref: String(g('ref') ?? '').trim(), des: g('des') ?? '', qte: toNum(g('qte')), prix: g('prix'), emp: g('emp') ?? '' };
+}
+const items = () => D.stock.rows.map(itemOf).filter(i => i.ref);
+const findRef = ref => { const k = String(ref).trim().toLowerCase(); return items().find(i => i.ref.toLowerCase() === k) || null; };
+
+async function loadStock() { D.stock = parseStock(await G.tableValues(T_STOCK)); }
+async function loadCodes() {
+  const j = await G.tableValues(T_CODES), v = j.values || [];
+  D.codeHeaders = (v[0] || []).map(norm);
+  const ci = D.codeHeaders.indexOf('codeqr'), ri = D.codeHeaders.indexOf('reference');
+  if (ci < 0 || ri < 0) throw new Error('Colonnes « Code QR » et « Référence » introuvables dans tblCodes.');
+  D.codes = new Map(); D.codesByRef = new Map();
+  for (let i = 1; i < v.length; i++) { const c = String(v[i][ci] ?? '').trim(), r = String(v[i][ri] ?? '').trim(); if (!c) continue;
+    D.codes.set(c, r); const k = r.toLowerCase(); D.codesByRef.set(k, (D.codesByRef.get(k) || 0) + 1); }
+}
+/* Utilisateurs : feuille Utilisateurs (tblUtilisateurs), ou liste locale au telephone si le tableau n'existe pas */
+let CUR = null; // utilisateur choisi sur la page d'accueil
+const curUser = () => CUR || '';
+async function loadUsers() {
+  try {
+    const v = (await G.tableValues(T_USERS)).values || [], h = (v[0] || []).map(norm);
+    const ni = h.indexOf('nom'), ai = h.indexOf('actif');
+    if (ni < 0) throw new Error('Colonne « Nom » introuvable dans tblUtilisateurs.');
+    D.userHeaders = h; D.usersLocal = false;
+    D.users = v.slice(1).filter(r => String(r[ni] ?? '').trim() && !(ai >= 0 && /^(non|n|0|false|faux)$/i.test(String(r[ai] ?? '').trim()))).map(r => String(r[ni]).trim());
+  } catch (e) {
+    if (e.auth) throw e;
+    if (!/introuvable/.test(e.message)) throw e;
+    D.usersLocal = true; D.users = store.get('users', []);
+  }
+  D.users.sort((a, b) => a.localeCompare(b, 'fr'));
+}
+async function addUser(name) {
+  await loadUsers();
+  if (D.users.some(u => u.toLowerCase() === name.toLowerCase())) throw new Error(`L'utilisateur ${name} existe déjà.`);
+  if (D.usersLocal) { const l = store.get('users', []); l.push(name); store.set('users', l); }
+  else { const h = D.userHeaders, row = h.map(() => ''), set = (k, v) => { const i = h.indexOf(k); if (i >= 0) row[i] = v; };
+    set('nom', name); set('creele', nowStr()); set('actif', 'Oui'); await G.rowsAdd(T_USERS, [row]); }
+  await loadUsers();
+}
+async function loadMovHeaders() { if (D.movHeaders) return; const j = await G.req(`/tables/${T_MOV}/headerRowRange?$select=values`); D.movHeaders = (j.values[0] || []).map(norm); }
+async function loadAll() {
+  busy(true);
+  try { await Promise.all([loadStock(), loadCodes(), loadMovHeaders(), loadUsers()]); D.loaded = true; hdr(); flushPending(); }
+  finally { busy(false); }
+}
+function hdr() { $('hdrst').innerHTML = D.loaded ? `${items().length} réf.<br>${CUR ? '👤 ' + esc(CUR) + ' ▾' : 'Aucun utilisateur'}` : ''; }
+$('hdrst').onclick = () => { if (D.loaded) goHome(); };
+
+/* Relit une ligne juste avant ecriture pour eviter d'ecraser une modification recente */
+async function freshItem(ref) {
+  let it = findRef(ref);
+  if (it) { const r = await G.rowGet(T_STOCK, it.index); const v = r.values[0];
+    if (String(v[D.stock.col.ref] ?? '').trim().toLowerCase() === ref.toLowerCase()) { D.stock.rows[it.index] = { index: it.index, values: v }; return itemOf(D.stock.rows[it.index]); } }
+  await loadStock(); it = findRef(ref);
+  if (!it) throw new Error(`Référence ${ref} introuvable dans le fichier.`);
+  return it;
+}
+
+function codeRow(code, ref) {
+  const h = D.codeHeaders, row = h.map(() => '');
+  const set = (k, v) => { const i = h.indexOf(k); if (i >= 0) row[i] = v; };
+  set('codeqr', code); set('reference', ref); set('associele', nowStr()); set('par', curUser()); return row;
+}
+async function addCodes(list) { // list: [[code, ref]]
+  if (!list.length) return;
+  await G.rowsAdd(T_CODES, list.map(([c, r]) => codeRow(c, r)));
+  list.forEach(([c, r]) => { D.codes.set(c, r); const k = r.toLowerCase(); D.codesByRef.set(k, (D.codesByRef.get(k) || 0) + 1); });
+}
+
+/* Journal des mouvements, avec file d'attente si l'ecriture echoue */
+function movRow(m) {
+  const h = D.movHeaders, row = h.map(() => '');
+  const map = { date: m.date, type: m.type, reference: m.ref, designation: m.des, quantite: m.q, stockavant: m.before, stockapres: m.after, codescanne: m.code || '', typedecode: m.kind || codeKind(m.code).type, utilisateur: m.user };
+  h.forEach((k, i) => { if (k in map) row[i] = map[k]; }); return row;
+}
+async function logMov(m) {
+  try { await loadMovHeaders(); await G.rowsAdd(T_MOV, [movRow(m)]); }
+  catch (e) { if (e.auth) throw e; const p = store.get('pending', []); p.push(m); store.set('pending', p);
+    toast("Stock mis à jour, mais l'historique n'a pas pu être écrit. Il sera renvoyé automatiquement.", 'warn'); pend(); }
+}
+let flushing = false;
+async function flushPending() {
+  const p = store.get('pending', []); if (!p.length || flushing) return pend(); flushing = true;
+  try { await loadMovHeaders(); await G.rowsAdd(T_MOV, p.map(movRow)); store.set('pending', []); } catch {} finally { flushing = false; pend(); }
+}
+function pend() { const n = store.get('pending', []).length; $('cPend').textContent = n ? `${n} ligne(s) d'historique en attente d'envoi.` : ''; }
+
+/* ==== Navigation ==== */
+let cur = null;
+function show(v) {
+  if (!CUR && !['home', 'login', 'set'].includes(v) && D.loaded) v = 'home';
+  $('nav').classList.toggle('hide', v === 'home' || v === 'login' || !D.loaded);
+  if (v !== 'scan') Scan.stop();
+  if (v !== 'multi') Multi.stop();
+  document.querySelectorAll('main>section').forEach(s => s.classList.toggle('hide', s.id !== 'v-' + v));
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  cur = v; window.scrollTo(0, 0);
+  ({ home: renderHome, search: renderSearch, lab: renderLabels, hist: renderHist, set: renderSet }[v] || (() => {}))();
+}
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => show(b.dataset.v));
+
+/* ==== Accueil : choix / creation de l'utilisateur ==== */
+function goHome(msg) { CUR = null; hdr(); $('hMsg').textContent = msg || ''; show('home'); }
+function renderHome() {
+  $('hNew').classList.add('hide'); $('bUAdd').classList.remove('hide'); $('hName').value = '';
+  const ini = n => n.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  $('hUsers').innerHTML = D.users.length ? D.users.map((u, i) => `<button data-i="${i}"><span class="ini">${esc(ini(u))}</span>${esc(u)}</button>`).join('')
+    : '<p class="mute" style="grid-column:1/-1">Aucun utilisateur pour l\'instant : créez le premier.</p>';
+  $('hUsers').querySelectorAll('button').forEach(b => b.onclick = () => pickUser(D.users[+b.dataset.i]));
+  if (!$('hMsg').textContent && D.usersLocal) $('hMsg').textContent = "Tableau tblUtilisateurs absent du fichier : les utilisateurs sont gardés sur ce téléphone uniquement.";
+  if (!D.users.length) openNewUser();
+}
+function openNewUser() { $('hNew').classList.remove('hide'); $('bUAdd').classList.add('hide'); setTimeout(() => $('hName').focus(), 50); }
+function pickUser(u) { CUR = u; $('hMsg').textContent = ''; touchIdle(); hdr(); toast(`Bonjour ${u}`, 'ok'); backToScan(); }
+$('bUAdd').onclick = openNewUser;
+$('bUNo').onclick = () => { $('hNew').classList.add('hide'); $('bUAdd').classList.remove('hide'); };
+const createUser = async () => {
+  const n = $('hName').value.trim().replace(/\s+/g, ' ');
+  if (n.length < 2) return toast('Entrez un nom (2 caractères minimum).', 'err');
+  if (n.length > 40) return toast('Nom trop long (40 caractères maximum).', 'err');
+  busy(true); try { await addUser(n); pickUser(n); } catch (e) { fail(e); } finally { busy(false); }
+};
+$('bUOk').onclick = createUser; $('hName').onkeydown = e => { if (e.key === 'Enter') createUser(); };
+// retour automatique a l'accueil apres inactivite (telephone partage)
+let lastAct = Date.now();
+const touchIdle = () => { lastAct = Date.now(); };
+['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, touchIdle, true));
+setInterval(() => { if (CUR && cfg.idleMin > 0 && Date.now() - lastAct > cfg.idleMin * 60000 && !['home', 'login'].includes(cur)) goHome(`${CUR} déconnecté après ${cfg.idleMin} min d'inactivité.`); }, 20000);
+
+/* ==== Scanner camera (BarcodeDetector natif de Chrome Android) ==== */
+function makeScanner(videoId, onCode, continuous) {
+  let stream = null, det = null, loop = null, last = '', lastT = 0;
+  return {
+    async start() {
+      if (stream) return;
+      if (!('BarcodeDetector' in window)) throw new Error('Lecture QR non disponible dans ce navigateur. Utilisez Chrome à jour sur Android, ou la saisie manuelle.');
+      if (!det) { const want = ['qr_code', 'data_matrix', 'code_128', 'code_39', 'ean_13', 'ean_8'];
+        const sup = await BarcodeDetector.getSupportedFormats(); det = new BarcodeDetector({ formats: want.filter(f => sup.includes(f)) }); }
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
+      const v = $(videoId); v.srcObject = stream; await v.play();
+      const tr = stream.getVideoTracks()[0], caps = tr.getCapabilities ? tr.getCapabilities() : {};
+      if (videoId === 'vid') $('bTorch').classList.toggle('hide', !caps.torch);
+      const tick = async () => {
+        if (!stream) return;
+        try { const r = await det.detect(v); if (r.length) { const c = r[0].rawValue.trim(), t = Date.now();
+          if (c && (c !== last || t - lastT > 2500)) { last = c; lastT = t; if (!continuous) this.stop(); onCode(c); } } } catch {}
+        if (stream) loop = setTimeout(tick, 120);
+      };
+      tick();
+    },
+    stop() { clearTimeout(loop); if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } const v = $(videoId); if (v) v.srcObject = null; },
+    get on() { return !!stream; },
+    async torch(on) { if (!stream) return; try { await stream.getVideoTracks()[0].applyConstraints({ advanced: [{ torch: on }] }); } catch {} }
+  };
+}
+const Scan = makeScanner('vid', c => { beep(); handleCode(c); }, false);
+let torchOn = false;
+$('bTorch').onclick = () => { torchOn = !torchOn; Scan.torch(torchOn); };
+async function startCam() {
+  try { await Scan.start(); $('bCam').textContent = 'Arrêter la caméra'; $('scanMsg').textContent = 'Visez le QR code de la pièce.'; }
+  catch (e) { $('scanMsg').textContent = e.name === 'NotAllowedError' ? "Accès à la caméra refusé : autorisez-le dans les paramètres du site." : e.message; }
+}
+$('bCam').onclick = () => { if (Scan.on) { Scan.stop(); $('bCam').textContent = 'Démarrer la caméra'; } else startCam(); };
+const manual = () => { const c = $('manCode').value.trim(); if (c) { $('manCode').value = ''; handleCode(c); } };
+$('bMan').onclick = manual; $('manCode').onkeydown = e => { if (e.key === 'Enter') manual(); };
+
+/* ==== Resolution d'un code scanne ==== */
+async function handleCode(code) {
+  try {
+    if (!CUR) return goHome();
+    if (!D.loaded) await loadAll();
+    if (isLabel(code)) { // etiquette magasin imprimee par l'application
+      const r = code.slice(LABEL_PREFIX.length).trim();
+      if (!findRef(r)) await loadStock();
+      if (!findRef(r)) { beep(false); toast(`Étiquette magasin de ${r}, mais cette référence n'existe pas dans le stock.`, 'err'); return backToScan(); }
+      return openProd(findRef(r).ref, code);
+    }
+    // code piece : reconnu uniquement via la feuille Codes, jamais compare aux references
+    let ref = D.codes.get(code);
+    if (!ref) { await loadCodes(); ref = D.codes.get(code); } // un autre appareil a peut-etre associe ce code
+    if (ref) { if (!findRef(ref)) await loadStock();
+      if (!findRef(ref)) { beep(false); toast(`Code associé à ${ref}, mais cette référence n'existe plus dans le stock.`, 'err'); return backToScan(); }
+      return openProd(ref, code); }
+    openUnknown(code);
+  } catch (e) { fail(e); }
+}
+
+/* ==== Fiche produit et mouvements ==== */
+let P = { ref: '', code: '', mode: 'out', it: null };
+function openProd(ref, code = '', mode, q) {
+  P = { ref, code, mode: mode || store.get('lastMode', 'out'), it: findRef(ref) };
+  renderProd(); if (q != null) { $('qIn').value = q; prev(); }
+  show('prod');
+}
+function renderProd() {
+  const it = P.it = findRef(P.ref) || P.it;
+  $('pRef').textContent = it.ref; $('pDes').textContent = it.des || '—'; $('pQte').textContent = it.qte;
+  $('pEmp').textContent = it.emp || '—'; $('pPrix').textContent = fmtPrix(it.prix);
+  const n = D.codesByRef.get(it.ref.toLowerCase()) || 0;
+  const kind = codeKind(P.code);
+  $('pCode').innerHTML = `<span class="tag ${kind.cls}">${kind.label}</span> ${esc(kind.detail)}<br>${n} code(s) pièce associé(s) à cette référence`;
+  setMode(P.mode);
+}
+function codeKind(c) {
+  if (!c) return { cls: '', label: 'Recherche', detail: 'ouvert sans scan', type: 'Recherche' };
+  if (isLabel(c)) return { cls: 'inv', label: 'Étiquette magasin', detail: c, type: 'Étiquette magasin' };
+  if (D.codes.has(c)) return { cls: 'in', label: 'Code pièce', detail: c, type: 'Code pièce' };
+  return { cls: '', label: 'Lot', detail: c, type: 'Lot de codes pièces' };
+}
+function setMode(m) {
+  P.mode = m; store.set('lastMode', m);
+  document.querySelectorAll('#modeTabs button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  const b = $('bValid'); b.className = 'btn ' + m;
+  b.textContent = { in: "Valider l'entrée", out: 'Valider la sortie', inv: "Valider l'inventaire" }[m];
+  $('qLbl').textContent = m === 'inv' ? 'Quantité réellement comptée dans le bac' : (m === 'in' ? 'Quantité ajoutée' : 'Quantité retirée');
+  $('qIn').value = m === 'inv' ? P.it.qte : 1; prev();
+}
+function prev() {
+  const q = parseInt($('qIn').value, 10), b = P.it.qte; let t = '';
+  if (isNaN(q) || q < 0) t = 'Quantité invalide';
+  else if (P.mode === 'in') t = `${b} → <b>${b + q}</b>`;
+  else if (P.mode === 'out') t = q > b ? `<span style="color:var(--out)">Stock insuffisant (${b} en stock)</span>` : `${b} → <b>${b - q}</b>`;
+  else { const d = q - b; t = `${b} → <b>${q}</b> (écart ${d > 0 ? '+' : ''}${d})`; }
+  $('qPrev').innerHTML = t;
+}
+document.querySelectorAll('#modeTabs button').forEach(b => b.onclick = () => setMode(b.dataset.m));
+$('qIn').oninput = prev;
+$('qMinus').onclick = () => { $('qIn').value = Math.max(0, (parseInt($('qIn').value, 10) || 0) - 1); prev(); };
+$('qPlus').onclick = () => { $('qIn').value = (parseInt($('qIn').value, 10) || 0) + 1; prev(); };
+$('bBack').onclick = () => backToScan();
+let validating = false;
+$('bValid').onclick = async () => {
+  if (validating) return;
+  if (!CUR) return goHome();
+  const q = parseInt($('qIn').value, 10);
+  if (isNaN(q) || q < 0 || String(q) !== $('qIn').value.trim()) return toast('Entrez un nombre entier.', 'err');
+  if (P.mode !== 'inv' && q === 0) return toast('La quantité doit être supérieure à 0.', 'err');
+  validating = true; busy(true);
+  try {
+    const it = await freshItem(P.ref), before = it.qte;
+    let after;
+    if (P.mode === 'in') after = before + q;
+    else if (P.mode === 'out') { if (q > before) { P.it = it; renderProd(); throw new Error(`Stock insuffisant : ${before} en stock. Faites un inventaire si le bac contient plus.`); } after = before - q; }
+    else after = q;
+    const vals = it.values.slice(); while (vals.length < D.stock.width) vals.push('');
+    vals[D.stock.col.qte] = after;
+    await G.rowPatch(T_STOCK, it.index, vals);
+    D.stock.rows[it.index] = { index: it.index, values: vals };
+    const type = { in: 'Entrée', out: 'Sortie', inv: 'Inventaire' }[P.mode];
+    await logMov({ date: nowStr(), type, ref: it.ref, des: it.des, q: P.mode === 'inv' ? after - before : q, before, after, code: P.code, user: curUser() });
+    beep(); toast(`${type} ${P.mode === 'inv' ? 'enregistré' : 'enregistrée'} : ${it.ref} ${before} → ${after}`, 'ok');
+    backToScan();
+  } catch (e) { fail(e); } finally { validating = false; busy(false); }
+};
+function backToScan() { show('scan'); if (cfg.autoCam) startCam(); else $('manCode').focus(); }
+
+/* ==== Code inconnu : associer ou creer ==== */
+let U = '';
+function openUnknown(code) {
+  U = code; beep(false); $('uCode').textContent = code;
+  const same = findRef(code);
+  $('uSame').classList.toggle('hide', !same);
+  if (same) $('uSame').innerHTML = `Ce code est identique à la référence <b>${esc(same.ref)}</b>, mais ce n'est pas une étiquette magasin : il n'est donc pas reconnu automatiquement. Si c'est bien cette pièce, touchez-la ci-dessous pour l'associer.`;
+  $('uSearch').value = same ? same.ref : ''; renderList('uList', $('uSearch').value, it => associate(U, it.ref)); show('unk');
+}
+$('uSearch').oninput = () => renderList('uList', $('uSearch').value, it => associate(U, it.ref));
+$('bUCancel').onclick = () => backToScan();
+$('bUNew').onclick = () => openForm(null, U);
+async function associate(code, ref) {
+  busy(true);
+  try { if (isLabel(code)) throw new Error("Une étiquette magasin ne s'associe pas : elle désigne déjà une référence.");
+    await loadCodes();
+    const ex = D.codes.get(code);
+    if (ex && ex.toLowerCase() !== ref.toLowerCase()) throw new Error(`Ce code est déjà associé à ${ex}.`);
+    if (!ex) await addCodes([[code, ref]]);
+    toast(`Code associé à ${ref}`, 'ok'); openProd(ref, code);
+  } catch (e) { fail(e); } finally { busy(false); }
+}
+function renderList(id, q, onPick, max = 40) {
+  const k = norm(q), all = items();
+  const res = (k ? all.filter(i => norm(i.ref + ' ' + i.des + ' ' + i.emp).includes(k)) : all).slice(0, max);
+  $(id).innerHTML = res.length ? res.map((i, n) => `<div class="it" data-n="${n}"><div class="t"><b>${esc(i.ref)}</b><span>${esc(i.des)}</span></div><span class="tag">${esc(i.emp || '—')}</span><span class="tag">${i.qte}</span></div>`).join('')
+    : '<p class="mute">Aucun résultat.</p>';
+  $(id).querySelectorAll('.it').forEach(el => el.onclick = () => onPick(res[+el.dataset.n]));
+}
+function renderSearch() { if (!D.loaded) return; renderList('sList', $('sSearch').value, it => openProd(it.ref, '')); setTimeout(() => $('sSearch').focus(), 50); }
+$('sSearch').oninput = renderSearch;
+$('bSNew').onclick = () => openForm(null, '');
+
+/* ==== Formulaire reference (creation / modification) ==== */
+const fill = (sel, arr) => $(sel).innerHTML = '<option value="">—</option>' + arr.map(x => `<option>${x}</option>`).join('');
+fill('fR', Array.from({ length: 20 }, (_, i) => pad2(i + 1))); fill('fE', Array.from({ length: 20 }, (_, i) => pad2(i + 1)));
+fill('fN', 'ABCDEFGHIJKLMNO'.split(''));
+$('fR').insertAdjacentHTML('afterbegin', ''); $('fR').options[0].text = 'Rangée'; $('fE').options[0].text = 'Étagère'; $('fN').options[0].text = 'Niveau';
+let F = { edit: null, code: '' };
+function openForm(it, code) {
+  F = { edit: it, code };
+  $('fTitle').textContent = it ? `Modifier ${it.ref}` : 'Nouvelle référence';
+  $('fRef').value = it ? it.ref : ''; $('fRef').disabled = !!it;
+  $('fDes').value = it ? it.des : ''; $('fPrix').value = it && it.prix !== '' ? String(it.prix).replace('.', ',') : '';
+  const e = it && normEmp(it.emp); const [r, s, n] = e ? e.split('-') : ['', '', ''];
+  $('fR').value = r; $('fE').value = s; $('fN').value = n;
+  $('fQBox').classList.toggle('hide', !!it); $('fQte').value = 0;
+  $('fCodeMsg').textContent = !it && code ? `Le code ${code} sera associé à cette référence.` : (it ? 'La référence ne peut pas être modifiée ici (elle est liée aux codes et à l\'historique).' : '');
+  show('form'); if (!it) $('fRef').focus();
+}
+$('bEdit').onclick = () => openForm(P.it, '');
+$('bFCancel').onclick = () => F.edit ? openProd(F.edit.ref, P.code) : backToScan();
+$('bFSave').onclick = async () => {
+  const ref = $('fRef').value.trim(), des = $('fDes').value.trim(), prixS = $('fPrix').value.trim();
+  const parts = [$('fR').value, $('fE').value, $('fN').value], emp = parts.every(Boolean) ? parts.join('-') : '';
+  if (parts.some(Boolean) && !emp) return toast("Emplacement incomplet : choisissez rangée, étagère et niveau (ou aucun).", 'err');
+  if (prixS && isNaN(toNum(prixS))) return toast('Prix invalide.', 'err');
+  const prix = prixS ? Math.round(toNum(prixS) * 10000) / 10000 : '';
+  busy(true);
+  try {
+    const c = D.stock.col;
+    if (F.edit) {
+      const it = await freshItem(F.edit.ref), vals = it.values.slice(); while (vals.length < D.stock.width) vals.push('');
+      if (c.des >= 0) vals[c.des] = des; if (c.prix >= 0) vals[c.prix] = prix; if (c.emp >= 0) vals[c.emp] = emp;
+      await G.rowPatch(T_STOCK, it.index, vals); D.stock.rows[it.index] = { index: it.index, values: vals };
+      toast('Référence mise à jour', 'ok'); openProd(it.ref, P.code);
+    } else {
+      if (!ref) throw new Error('La référence est obligatoire.');
+      const q = parseInt($('fQte').value, 10) || 0; if (q < 0) throw new Error('Quantité invalide.');
+      await loadStock(); if (findRef(ref)) throw new Error(`La référence ${ref} existe déjà.`);
+      const vals = new Array(D.stock.width).fill('');
+      vals[c.ref] = ref; vals[c.qte] = q; if (c.des >= 0) vals[c.des] = des; if (c.prix >= 0) vals[c.prix] = prix; if (c.emp >= 0) vals[c.emp] = emp;
+      const blank = D.stock.rows.find(r => r.values.every(x => x === '' || x == null));
+      if (blank) { await G.rowPatch(T_STOCK, blank.index, vals); blank.values = vals; }
+      else { await G.rowsAdd(T_STOCK, [vals]); await loadStock(); }
+      if (F.code && !isLabel(F.code)) { await loadCodes(); if (!D.codes.has(F.code)) await addCodes([[F.code, ref]]); }
+      if (q > 0) await logMov({ date: nowStr(), type: 'Entrée', ref, des, q, before: 0, after: q, code: F.code, user: curUser() });
+      hdr(); toast(`Référence ${ref} créée`, 'ok'); openProd(ref, F.code);
+    }
+  } catch (e) { fail(e); } finally { busy(false); }
+};
+
+/* ==== Enregistrement de plusieurs codes pieces (reception) ==== */
+const Multi = (() => {
+  let ref = '', n = 0, queue = Promise.resolve();
+  const sc = makeScanner('vid2', c => add(c), true);
+  function add(code) {
+    queue = queue.then(async () => {
+      if (isLabel(code)) { beep(false); $('mMsg').textContent = `Étiquette magasin ignorée : seuls les codes pièces s'enregistrent ici.`; return; }
+      const ex = D.codes.get(code);
+      if (ex) { beep(false); $('mMsg').textContent = ex.toLowerCase() === ref.toLowerCase() ? `Déjà enregistré : ${code}` : `⚠ ${code} est associé à ${ex}, ignoré.`; return; }
+      try { await addCodes([[code, ref]]); n++; $('mCount').textContent = n; beep(); $('mMsg').textContent = `Enregistré : ${code}`; }
+      catch (e) { beep(false); $('mMsg').textContent = 'Erreur : ' + e.message; }
+    });
+  }
+  return {
+    open(r) { ref = r; n = 0; $('mRef').textContent = r; $('mCount').textContent = 0; $('mMsg').textContent = ''; show('multi');
+      sc.start().catch(e => $('mMsg').textContent = e.message); },
+    add, stop() { sc.stop(); }, async done() { await queue; return n; }, get ref() { return ref; }
+  };
+})();
+$('bMulti').onclick = () => Multi.open(P.ref);
+const mMan = () => { const c = $('mMan').value.trim(); if (c) { $('mMan').value = ''; Multi.add(c); } };
+$('bMMan').onclick = mMan; $('mMan').onkeydown = e => { if (e.key === 'Enter') mMan(); };
+$('bMEntry').onclick = async () => { const n = await Multi.done(); openProd(Multi.ref, n ? `${n} code(s) pièce enregistré(s)` : P.code, 'in', Math.max(n, 1)); };
+$('bMEnd').onclick = async () => { await Multi.done(); openProd(Multi.ref, P.code); };
+
+/* ==== Etiquettes ==== */
+const sel = new Map(); // ref -> copies
+const LF = ['c', 'r', 'w', 'h', 'mt', 'ml', 'gx', 'gy'];
+function renderLabels() {
+  if (!D.loaded) return;
+  LF.forEach(k => $('l' + k).value = cfg.label[k]);
+  const k = norm($('lSearch').value), only = $('lNoCode').checked;
+  const res = items().filter(i => (!only || !D.codesByRef.get(i.ref.toLowerCase())) && (!k || norm(i.ref + ' ' + i.des + ' ' + i.emp).includes(k)));
+  $('lList').innerHTML = res.map((i, n) => `<div class="it"><input type="checkbox" data-n="${n}" ${sel.has(i.ref) ? 'checked' : ''}><div class="t"><b>${esc(i.ref)}</b><span>${esc(i.des)}</span></div><input class="cp" type="number" min="1" data-n="${n}" value="${sel.get(i.ref) || 1}" title="Copies"></div>`).join('') || '<p class="mute">Aucune référence.</p>';
+  $('lList').querySelectorAll('input[type=checkbox]').forEach(cb => cb.onchange = () => { const it = res[+cb.dataset.n]; if (cb.checked) sel.set(it.ref, +cb.parentNode.querySelector('.cp').value || 1); else sel.delete(it.ref); lsum(); });
+  $('lList').querySelectorAll('.cp').forEach(cp => cp.onchange = () => { const it = res[+cp.dataset.n]; if (sel.has(it.ref)) sel.set(it.ref, Math.max(1, +cp.value || 1)); lsum(); });
+  $('lAll').onclick = () => { res.forEach(i => sel.set(i.ref, sel.get(i.ref) || 1)); renderLabels(); };
+  $('lNone').onclick = () => { sel.clear(); renderLabels(); };
+  lsum();
+}
+function lsum() {
+  const n = [...sel.values()].reduce((a, b) => a + b, 0), per = cfg.label.c * cfg.label.r, st = Math.max(1, +$('lstart').value || 1) - 1;
+  $('lSum').textContent = `${sel.size} référence(s), ${n} étiquette(s), ${n ? Math.ceil((n + st) / per) : 0} planche(s) de ${per}.`;
+}
+$('lSearch').oninput = renderLabels; $('lNoCode').onchange = renderLabels; $('lstart').oninput = lsum;
+LF.forEach(k => $('l' + k).onchange = () => { const v = parseFloat($('l' + k).value); if (!isNaN(v) && v >= 0) { cfg.label[k] = (k === 'c' || k === 'r') ? Math.max(1, Math.round(v)) : v; saveCfg(); } lsum(); });
+$('bPrint').onclick = () => {
+  const L = cfg.label, per = L.c * L.r, list = [];
+  items().forEach(i => { for (let n = 0; n < (sel.get(i.ref) || 0); n++) list.push(i); });
+  if (!list.length) return toast('Cochez au moins une référence.', 'err');
+  if (L.ml + L.c * L.w + (L.c - 1) * L.gx > 210.5 || L.mt + L.r * L.h + (L.r - 1) * L.gy > 297.5) return toast('Le format dépasse la feuille A4 : vérifiez les dimensions.', 'err');
+  const start = Math.max(1, +$('lstart').value || 1) - 1, svgCache = new Map(), out = $('lOutline').checked;
+  let html = '', slot = start;
+  const total = list.length + start;
+  for (let p = 0; p * per < total; p++) {
+    html += '<div class="sheet">';
+    for (let s = 0; s < per; s++, slot) {
+      const gi = p * per + s; if (gi < start || gi >= total) continue;
+      const it = list[gi - start], c = s % L.c, r = Math.floor(s / L.c);
+      if (!svgCache.has(it.ref)) svgCache.set(it.ref, QR.svg(LABEL_PREFIX + it.ref, 1));
+      html += `<div class="lab${out ? ' outline' : ''}" style="left:${L.ml + c * (L.w + L.gx)}mm;top:${L.mt + r * (L.h + L.gy)}mm;width:${L.w}mm;height:${L.h}mm">${svgCache.get(it.ref)}<div class="lt"><div class="lr">${esc(it.ref)}</div><div class="ld">${esc(it.des)}</div><div class="le">${esc(it.emp)}</div></div></div>`;
+    }
+    html += '</div>';
+  }
+  $('print').innerHTML = html;
+  setTimeout(() => window.print(), 100);
+};
+
+/* ==== Historique ==== */
+async function renderHist() {
+  if (!D.loaded) return;
+  $('hList').innerHTML = '<p class="mute">Chargement…</p>';
+  try {
+    const a = await G.req(`/tables/${T_MOV}/range?$select=address,rowCount,columnCount`);
+    const m = String(a.address).match(/^(.*)!([A-Z]+)(\d+):([A-Z]+)(\d+)$/);
+    if (!m) throw new Error('Adresse du tableau illisible : ' + a.address);
+    const sheet = m[1].replace(/^'|'$/g, '').replace(/''/g, "'"), end = +m[5], first = +m[3] + 1, start = Math.max(first, end - 49);
+    let rows = [];
+    if (end >= first) { const r = await G.req(`/worksheets/${encodeURIComponent(sheet)}/range(address='${m[2]}${start}:${m[4]}${end}')?$select=values`); rows = r.values; }
+    await loadMovHeaders(); const h = D.movHeaders, gi = k => h.indexOf(k);
+    rows = rows.filter(r => r.some(x => x !== '')).reverse();
+    $('hList').innerHTML = rows.length ? rows.map(r => { const t = String(r[gi('type')] || ''), cls = /entr/i.test(t) ? 'in' : /sort/i.test(t) ? 'out' : 'inv';
+      const q = r[gi('quantite')], qs = cls === 'inv' ? `${q > 0 ? '+' : ''}${q}` : (cls === 'out' ? '−' : '+') + q;
+      return `<div class="it"><div class="t"><b>${esc(r[gi('reference')])} <span class="tag ${cls}" style="display:inline">${esc(t)} ${esc(qs)}</span></b><span>${esc(fmtDate(r[gi('date')]))} · ${esc(r[gi('stockavant')])} → ${esc(r[gi('stockapres')])} · ${esc(r[gi('utilisateur')])}</span></div></div>`; }).join('')
+      : '<p class="mute">Aucun mouvement.</p>';
+  } catch (e) { $('hList').innerHTML = `<p class="mute">${esc(e.message)}</p>`; if (e.auth) fail(e); }
+}
+$('bHRefresh').onclick = renderHist;
+
+/* ==== Reglages ==== */
+function renderSet() {
+  $('cTenant').value = cfg.tenantId; $('cClient').value = cfg.clientId; $('cPath').value = cfg.filePath; $('cBase').value = cfg.graphBase;
+  $('cRedir').textContent = Auth.redirect; $('cAuto').checked = cfg.autoCam; $('cSound').checked = cfg.sound;
+  $('cIdle').value = cfg.idleMin;
+  $('cUser').textContent = (CUR ? `Utilisateur : ${CUR} · ` : '') + (Auth.user() ? `Compte Microsoft : ${Auth.user()}` : 'Non connecté'); pend();
+}
+$('cAuto').onchange = () => { cfg.autoCam = $('cAuto').checked; saveCfg(); };
+$('cSound').onchange = () => { cfg.sound = $('cSound').checked; saveCfg(); };
+$('cIdle').onchange = () => { const v = parseInt($('cIdle').value, 10); cfg.idleMin = isNaN(v) || v < 0 ? 0 : v; saveCfg(); };
+$('bChUser').onclick = () => goHome();
+$('bCSave').onclick = async () => {
+  const changedAuth = cfg.tenantId !== $('cTenant').value.trim() || cfg.clientId !== $('cClient').value.trim();
+  cfg.tenantId = $('cTenant').value.trim(); cfg.clientId = $('cClient').value.trim(); cfg.filePath = $('cPath').value.trim(); cfg.graphBase = $('cBase').value.trim(); saveCfg();
+  D.loaded = false; D.movHeaders = null;
+  if (changedAuth || !store.get('tok')) { store.del('tok'); return Auth.login(); }
+  try { await loadAll(); $('cMsg').textContent = `OK : ${items().length} références, ${D.codes.size} codes pièces, ${D.users.length} utilisateur(s).`; toast('Connexion au fichier réussie', 'ok'); }
+  catch (e) { $('cMsg').textContent = e.message; fail(e); }
+};
+$('bReload').onclick = async () => { try { D.movHeaders = null; await loadAll(); toast('Données rechargées', 'ok'); } catch (e) { fail(e); } };
+$('bLogout').onclick = () => Auth.logout();
+$('bLogin').onclick = () => Auth.login();
+
+/* ==== Erreurs ==== */
+function fail(e) {
+  console.error(e); beep(false);
+  if (e && e.auth) { $('nav').classList.add('hide'); show('login'); $('loginMsg').textContent = 'Session expirée, reconnectez-vous.' + (e.message && e.message !== 'Connexion requise' ? ' (' + e.message + ')' : ''); return; }
+  toast(e && e.message ? e.message : String(e), 'err');
+}
+
+/* ==== Demarrage ==== */
+(async () => {
+  try { await Auth.handleRedirect(); } catch (e) { show('login'); $('loginMsg').textContent = 'Échec de connexion : ' + e.message; return; }
+  if (!cfg.clientId || !cfg.tenantId) { $('nav').classList.remove('hide'); show('set'); $('cMsg').textContent = "Renseignez l'ID de l'annuaire et l'ID d'application, puis Enregistrer."; return; }
+  if (!store.get('tok')) { show('login'); return; }
+  $('nav').classList.remove('hide');
+  try { await loadAll(); goHome(); }
+  catch (e) { if (e.auth) return fail(e); show('set'); $('cMsg').textContent = e.message; fail(e); }
+})();
+window.addEventListener('online', flushPending);
+document.addEventListener('visibilitychange', () => { if (document.hidden) { Scan.stop(); Multi.stop(); $('bCam').textContent = 'Démarrer la caméra'; } });
+</script>
+</body>
+</html>
